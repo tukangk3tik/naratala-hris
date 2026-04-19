@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Naratala HRIS — People Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body class="theme-light">
+<div id="root"></div>
+
+<script>
+/* EDITMODE defaults */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "sage",
+  "sidebarCollapsed": false,
+  "language": "id"
+}/*EDITMODE-END*/;
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components/icons.jsx"></script>
+<script type="text/babel" src="components/data.jsx"></script>
+<script type="text/babel" src="components/i18n.jsx"></script>
+<script type="text/babel" src="components/shell.jsx"></script>
+<script type="text/babel" src="components/absence.jsx"></script>
+<script type="text/babel" src="components/employees.jsx"></script>
+<script type="text/babel" src="components/other-views.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const titleFor = (view) => ({
+  overview:   { title: t('title_overview'),   sub: t('sub_overview') },
+  absence:    { title: t('title_absence'),    sub: t('sub_absence') },
+  employees:  { title: t('title_employees'),  sub: t('sub_employees') },
+  payroll:    { title: t('title_payroll'),    sub: t('sub_payroll') },
+  benefits:   { title: t('title_benefits'),   sub: t('sub_benefits') },
+  recruiting: { title: t('title_recruiting'), sub: t('sub_recruiting') },
+}[view] || {});
+
+const ACCENT_OPTIONS = [
+  { key: 'sage',       label: 'Sage',       value: 'oklch(0.70 0.09 150)' },
+  { key: 'terracotta', label: 'Terracotta', value: 'oklch(0.66 0.13 40)' },
+  { key: 'plum',       label: 'Plum',       value: 'oklch(0.60 0.10 320)' },
+  { key: 'sky',        label: 'Sky',        value: 'oklch(0.72 0.08 230)' },
+];
+
+function App() {
+  const [view, setView] = useState(() => {
+    try { return localStorage.getItem('nt-view') || 'absence'; } catch { return 'absence'; }
+  });
+  const [collapsed, setCollapsed] = useState(TWEAK_DEFAULTS.sidebarCollapsed);
+  const [dark, setDark] = useState(TWEAK_DEFAULTS.theme === 'dark');
+  const [accent, setAccent] = useState(TWEAK_DEFAULTS.accent);
+  const [lang, setLang] = useState(TWEAK_DEFAULTS.language || 'id');
+  const [openEmpId, setOpenEmpId] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.className = dark ? 'theme-dark' : 'theme-light';
+  }, [dark]);
+
+  useEffect(() => {
+    const found = ACCENT_OPTIONS.find(a => a.key === accent);
+    if (found) document.body.style.setProperty('--accent', found.value);
+  }, [accent]);
+
+  useEffect(() => {
+    try { localStorage.setItem('nt-view', view); } catch {}
+  }, [view]);
+
+  useEffect(() => {
+    window.__lang = lang;
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  // Tweaks host integration
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode')   setTweaksOpen(true);
+      if (e.data.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const persist = (key, val) => {
+    try { window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*'); } catch {}
+  };
+
+  const openEmployee = (id) => {
+    setView('employees');
+    setOpenEmpId(id);
+  };
+
+  const meta = titleFor(view);
+
+  const topbarRight = view === 'employees'
+    ? <button className="nt-btn-primary" onClick={() => setShowAdd(true)}><IconPlus size={14}/> {t('add_person')}</button>
+    : view === 'absence'
+    ? <button className="nt-btn-primary"><IconCalendar size={14}/> {t('new_policy')}</button>
+    : view === 'payroll'
+    ? <button className="nt-btn-primary"><IconCheck size={14}/> {t('run_payroll')}</button>
+    : view === 'recruiting'
+    ? <button className="nt-btn-primary"><IconPlus size={14}/> {t('post_role')}</button>
+    : null;
+
+  return (
+    <div className="nt-app" data-screen-label={`Naratala — ${meta.title || view}`}>
+      <Sidebar current={view} setCurrent={setView} collapsed={collapsed} setCollapsed={setCollapsed} dark={dark}/>
+      <div className="nt-main">
+        <TopBar
+          title={meta.title}
+          subtitle={meta.sub}
+          dark={dark}
+          onToggleDark={() => { setDark(!dark); persist('theme', !dark ? 'dark' : 'light'); }}
+          right={topbarRight}
+        />
+        <div className="nt-content">
+          {view === 'overview'   && <OverviewView setView={setView} openEmployee={openEmployee}/>}
+          {view === 'absence'    && <AbsenceView openEmployee={openEmployee}/>}
+          {view === 'employees'  && <EmployeesView selectedId={openEmpId} setSelectedId={setOpenEmpId} showAdd={showAdd} setShowAdd={setShowAdd}/>}
+          {view === 'payroll'    && <PayrollView/>}
+          {view === 'benefits'   && <BenefitsView/>}
+          {view === 'recruiting' && <RecruitingView/>}
+        </div>
+      </div>
+
+      {tweaksOpen && (
+        <div className="nt-tweaks">
+          <div className="nt-tweaks-title">{t('tweaks_title')}</div>
+          <div className="nt-tweaks-row">
+            <label>{t('tw_language')}</label>
+            <div className="nt-lang-seg">
+              <button className={lang === 'id' ? 'active' : ''} onClick={() => { setLang('id'); persist('language', 'id'); }}>ID</button>
+              <button className={lang === 'en' ? 'active' : ''} onClick={() => { setLang('en'); persist('language', 'en'); }}>EN</button>
+            </div>
+          </div>
+          <div className="nt-tweaks-row">
+            <label>{t('tw_theme')}</label>
+            <div className={`nt-toggle ${dark ? 'on' : ''}`} onClick={() => { setDark(!dark); persist('theme', !dark ? 'dark' : 'light'); }}/>
+          </div>
+          <div className="nt-tweaks-row">
+            <label>{t('tw_accent')}</label>
+            <div className="nt-swatches">
+              {ACCENT_OPTIONS.map(a => (
+                <div key={a.key}
+                     className={`nt-swatch ${accent === a.key ? 'active' : ''}`}
+                     style={{ background: a.value }}
+                     title={a.label}
+                     onClick={() => { setAccent(a.key); persist('accent', a.key); }}/>
+              ))}
+            </div>
+          </div>
+          <div className="nt-tweaks-row">
+            <label>{t('tw_sidebar')}</label>
+            <div className={`nt-toggle ${collapsed ? 'on' : ''}`} onClick={() => { setCollapsed(!collapsed); persist('sidebarCollapsed', !collapsed); }}/>
+          </div>
+          <div style={{fontSize: 11.5, color: 'var(--muted)', marginTop: 10, lineHeight: 1.5, borderTop: '1px solid var(--line-soft)', paddingTop: 10}}>
+            {t('tw_hint')}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
