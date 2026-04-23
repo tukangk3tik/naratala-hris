@@ -24,6 +24,10 @@ apps/*/.env.local
 .cache/
 *.tsbuildinfo
 
+# test artifacts
+apps/api/test-results/
+apps/*/tsconfig.tsbuildinfo
+
 # logs
 *.log
 npm-debug.log*

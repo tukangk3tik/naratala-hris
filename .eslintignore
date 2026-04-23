@@ -1,0 +1,7 @@
+node_modules
+dist
+build
+coverage
+components/
+styles.css
+index.html

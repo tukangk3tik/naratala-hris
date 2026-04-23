@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.turbo
+.cache
+coverage
+apps/*/dist
+apps/*/build
+components/
+styles.css
+index.html
+docs/
+pnpm-lock.yaml
