@@ -78,7 +78,7 @@ export const employees = mysqlTable(
     employmentStatus: mysqlEnum('employment_status', ['active', 'on_leave', 'terminated'])
       .notNull()
       .default('active'),
-    hireDate: date('hire_date').notNull(),
+    hireDate: date('hire_date', { mode: 'string' }).notNull(),
     managerId: bigint('manager_id', { mode: 'number', unsigned: true }),
     salaryAmount: decimal('salary_amount', { precision: 14, scale: 2 }),
     salaryCurrency: char('salary_currency', { length: 3 }).notNull().default('IDR'),
