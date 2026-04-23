@@ -21,7 +21,7 @@ const ts = {
   updatedAt: datetime('updated_at', { fsp: 3 })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP(3)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP(3)`),
+    .$onUpdate(() => new Date()),
 };
 
 export const users = mysqlTable(
