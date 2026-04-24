@@ -23,7 +23,16 @@ export function makeRateLimiter(opts: Opts): RequestHandler {
   return rateLimit(config);
 }
 
-export const limiters = {
+interface Limiters {
+  global: () => RequestHandler;
+  loginByEmail: () => RequestHandler;
+  loginByIp: () => RequestHandler;
+  forgotByEmail: () => RequestHandler;
+  forgotByIp: () => RequestHandler;
+  refresh: () => RequestHandler;
+}
+
+export const limiters: Limiters = {
   global: () => makeRateLimiter({ windowMs: 60_000, max: 300 }),
   loginByEmail: () =>
     makeRateLimiter({

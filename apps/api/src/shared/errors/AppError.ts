@@ -84,5 +84,14 @@ export interface HttpOutput {
 
 export function toHttp(err: unknown): HttpOutput {
   if (err instanceof AppError) return { status: err.status, body: err.toBody() };
+  if (err && typeof err === 'object' && 'type' in err) {
+    const t = (err as { type?: unknown }).type;
+    if (t === 'entity.too.large') {
+      return { status: 413, body: { code: 'VALIDATION_FAILED', message: 'request body too large' } };
+    }
+    if (t === 'entity.parse.failed') {
+      return { status: 400, body: { code: 'VALIDATION_FAILED', message: 'invalid JSON body' } };
+    }
+  }
   return { status: 500, body: { code: 'INTERNAL_ERROR', message: 'internal error' } };
 }
