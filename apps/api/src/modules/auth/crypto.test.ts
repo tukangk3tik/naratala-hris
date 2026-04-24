@@ -23,7 +23,7 @@ describe('AES-256-GCM', () => {
 
   it('tampered ciphertext fails', () => {
     const ct = encryptGcm(KEY, 'secret');
-    ct[ct.length - 1] ^= 0xff;
+    ct[ct.length - 1] = (ct[ct.length - 1] ?? 0) ^ 0xff;
     expect(() => decryptGcm(KEY, ct)).toThrow();
   });
 

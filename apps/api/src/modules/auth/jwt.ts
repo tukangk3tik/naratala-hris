@@ -40,7 +40,7 @@ export function createJwtService(cfg: Config): JwtService {
     return jwt.sign({ role: input.role, scope: 'access' }, cfg.secret, {
       ...base,
       subject: String(input.sub),
-      expiresIn: cfg.accessTtl as jwt.SignOptions['expiresIn'],
+      expiresIn: cfg.accessTtl as unknown as number,
       jwtid: randomUUID(),
     });
   }
