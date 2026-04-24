@@ -78,6 +78,13 @@ export interface AuthService {
   changePassword: (userId: number, current: string, next: string) => Promise<void>;
   requestForgot: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
+  mfaSetupStart: (userId: number) => Promise<{ secret: string; otpauthUrl: string }>;
+  mfaSetupConfirm: (
+    userId: number,
+    secret: string,
+    code: string,
+  ) => Promise<{ recoveryCodes: string[] }>;
+  mfaDisable: (userId: number, currentPassword: string, code: string) => Promise<void>;
 }
 
 export function createAuthService(deps: Deps): AuthService {
@@ -239,6 +246,53 @@ export function createAuthService(deps: Deps): AuthService {
     await deps.refresh.revokeAllForUser(found.userId);
   }
 
+  async function mfaSetupStart(
+    userId: number,
+  ): Promise<{ secret: string; otpauthUrl: string }> {
+    const user = await deps.users.findById(userId);
+    if (!user) throw new AuthError('INVALID_CREDENTIALS', 'user not found');
+    const { generateTotpSecret, totpOtpauthUrl } = await import('./mfa.js');
+    const secret = generateTotpSecret();
+    const otpauthUrl = totpOtpauthUrl(secret, 'Naratala HRIS', user.email);
+    return { secret, otpauthUrl };
+  }
+
+  async function mfaSetupConfirm(
+    userId: number,
+    secret: string,
+    code: string,
+  ): Promise<{ recoveryCodes: string[] }> {
+    const user = await deps.users.findById(userId);
+    if (!user) throw new AuthError('INVALID_CREDENTIALS', 'user not found');
+    const { verifyTotp, generateRecoveryCodes } = await import('./mfa.js');
+    if (!verifyTotp(secret, code)) throw new AuthError('MFA_INVALID', 'invalid totp');
+    const { encryptGcm } = await import('./crypto.js');
+    const { loadEnv } = await import('../../shared/config/env.js');
+    const key = loadEnv().MFA_ENCRYPTION_KEY;
+    await deps.users.updateMfa(user.id, true, encryptGcm(key, secret));
+    return { recoveryCodes: generateRecoveryCodes() };
+  }
+
+  async function mfaDisable(
+    userId: number,
+    currentPassword: string,
+    code: string,
+  ): Promise<void> {
+    const user = await deps.users.findById(userId);
+    if (!user || !user.mfaEnabled || !user.mfaSecret)
+      throw new AuthError('MFA_INVALID', 'mfa not enabled');
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+      throw new AuthError('INVALID_CREDENTIALS', 'invalid credentials');
+    }
+    const { decryptGcm } = await import('./crypto.js');
+    const { verifyTotp } = await import('./mfa.js');
+    const { loadEnv } = await import('../../shared/config/env.js');
+    const key = loadEnv().MFA_ENCRYPTION_KEY;
+    const secret = decryptGcm(key, user.mfaSecret);
+    if (!verifyTotp(secret, code)) throw new AuthError('MFA_INVALID', 'invalid totp');
+    await deps.users.updateMfa(user.id, false, null);
+  }
+
   return {
     login,
     issueFreshTokens,
@@ -249,6 +303,9 @@ export function createAuthService(deps: Deps): AuthService {
     changePassword,
     requestForgot,
     resetPassword,
+    mfaSetupStart,
+    mfaSetupConfirm,
+    mfaDisable,
   };
 }
 

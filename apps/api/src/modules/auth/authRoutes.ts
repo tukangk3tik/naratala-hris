@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import {
   LoginBody,
   MfaVerifyBody,
+  MfaDisableBody,
   PasswordChangeBody,
   PasswordForgotBody,
   PasswordResetBody,
@@ -146,6 +148,52 @@ export function createAuthRouter(deps: { service: AuthService; jwt: JwtService }
       next(err);
     }
   });
+
+  r.post('/mfa/setup/start', authenticate, async (req, res, next) => {
+    try {
+      const out = await deps.service.mfaSetupStart(req.user!.sub);
+      return res.json(out);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  const MfaConfirmWithSecret = z
+    .object({
+      code: z.string().regex(/^\d{6}$/),
+      secret: z.string().min(16),
+    })
+    .strict();
+
+  r.post(
+    '/mfa/setup/confirm',
+    authenticate,
+    validate({ body: MfaConfirmWithSecret }),
+    async (req, res, next) => {
+      try {
+        const body = req.valid.body as { secret: string; code: string };
+        const out = await deps.service.mfaSetupConfirm(req.user!.sub, body.secret, body.code);
+        return res.json(out);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  r.post(
+    '/mfa/disable',
+    authenticate,
+    validate({ body: MfaDisableBody }),
+    async (req, res, next) => {
+      try {
+        const body = req.valid.body as { currentPassword: string; code: string };
+        await deps.service.mfaDisable(req.user!.sub, body.currentPassword, body.code);
+        return res.json({ ok: true });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   return r;
 }
