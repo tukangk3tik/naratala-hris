@@ -73,10 +73,12 @@ export function createUserRepo(db: DB): UserRepo {
       await db.update(users).set(p).where(eq(users.id, id));
     },
     async countAdmins() {
-      const [row] = await db.execute<{ n: number }>(
+      const result = await db.execute<{ n: number }>(
         sql`SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND status = 'active' AND deleted_at IS NULL`,
       );
-      return Number((row as { n?: number } | undefined)?.n ?? 0);
+      const rows = Array.isArray(result) ? result[0] : result;
+      const first = Array.isArray(rows) ? rows[0] : rows;
+      return Number((first as { n?: number } | undefined)?.n ?? 0);
     },
     async listPaginated({ page, pageSize }) {
       const offset = (page - 1) * pageSize;
@@ -87,10 +89,15 @@ export function createUserRepo(db: DB): UserRepo {
         .orderBy(users.email)
         .limit(pageSize)
         .offset(offset);
-      const [c] = await db.execute<{ n: number }>(
+      const cRes = await db.execute<{ n: number }>(
         sql`SELECT COUNT(*) AS n FROM users WHERE deleted_at IS NULL`,
       );
-      return { rows: rows as UserRow[], total: Number((c as { n?: number } | undefined)?.n ?? 0) };
+      const cRows = Array.isArray(cRes) ? cRes[0] : cRes;
+      const cFirst = Array.isArray(cRows) ? cRows[0] : cRows;
+      return {
+        rows: rows as UserRow[],
+        total: Number((cFirst as { n?: number } | undefined)?.n ?? 0),
+      };
     },
   };
 }
