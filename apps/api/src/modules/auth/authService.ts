@@ -27,6 +27,14 @@ export type LoginResult =
       user: UserRow;
     };
 
+export interface IssuedTokens {
+  kind: 'tokens';
+  accessToken: string;
+  refreshToken: string;
+  refreshExpiresAt: Date;
+  user: UserRow;
+}
+
 export interface AuthService {
   login: (input: {
     email: string;
@@ -34,17 +42,25 @@ export interface AuthService {
     ip: string;
     userAgent?: string;
   }) => Promise<LoginResult>;
-  issueFreshTokens: (
-    user: UserRow,
-    ip: string,
-    userAgent?: string,
-  ) => Promise<{
-    kind: 'tokens';
+  issueFreshTokens: (user: UserRow, ip: string, userAgent?: string) => Promise<IssuedTokens>;
+  verifyMfa: (input: {
+    mfaToken: string;
+    code: string;
+    ip: string;
+    userAgent?: string;
+  }) => Promise<IssuedTokens>;
+  refreshSession: (input: {
+    rawToken: string;
+    ip: string;
+    userAgent?: string;
+  }) => Promise<{
     accessToken: string;
     refreshToken: string;
     refreshExpiresAt: Date;
     user: UserRow;
   }>;
+  logout: (input: { rawToken?: string | undefined }) => Promise<void>;
+  getMe: (userId: number) => Promise<UserRow>;
 }
 
 export function createAuthService(deps: Deps): AuthService {
@@ -87,13 +103,7 @@ export function createAuthService(deps: Deps): AuthService {
     user: UserRow,
     ip: string,
     userAgent?: string,
-  ): Promise<{
-    kind: 'tokens';
-    accessToken: string;
-    refreshToken: string;
-    refreshExpiresAt: Date;
-    user: UserRow;
-  }> {
+  ): Promise<IssuedTokens> {
     const accessToken = deps.jwt.signAccess({ sub: user.id, role: user.role });
     const r = await deps.refresh.issueNew({
       userId: user.id,
@@ -110,7 +120,66 @@ export function createAuthService(deps: Deps): AuthService {
     };
   }
 
-  return { login, issueFreshTokens };
+  async function verifyMfa(input: {
+    mfaToken: string;
+    code: string;
+    ip: string;
+    userAgent?: string;
+  }): Promise<IssuedTokens> {
+    const payload = deps.jwt.verifyMfaToken(input.mfaToken);
+    const user = await deps.users.findById(payload.sub);
+    if (!user || !user.mfaEnabled || !user.mfaSecret) {
+      throw new AuthError('MFA_INVALID', 'mfa not enabled');
+    }
+    const { decryptGcm } = await import('./crypto.js');
+    const { verifyTotp } = await import('./mfa.js');
+    const { loadEnv } = await import('../../shared/config/env.js');
+    const key = loadEnv().MFA_ENCRYPTION_KEY;
+    const secret = decryptGcm(key, user.mfaSecret);
+    if (!verifyTotp(secret, input.code)) throw new AuthError('MFA_INVALID', 'invalid code');
+    return issueFreshTokens(user, input.ip, input.userAgent);
+  }
+
+  async function refreshSession(input: {
+    rawToken: string;
+    ip: string;
+    userAgent?: string;
+  }): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    refreshExpiresAt: Date;
+    user: UserRow;
+  }> {
+    const rotated = await deps.refresh.rotate({
+      rawToken: input.rawToken,
+      ip: input.ip,
+      userAgent: input.userAgent ?? null,
+    });
+    const user = await deps.users.findById(rotated.userId);
+    if (!user || user.status === 'disabled' || user.deletedAt) {
+      await deps.refresh.revokeAllForUser(rotated.userId);
+      throw new AuthError('TOKEN_EXPIRED', 'account not eligible');
+    }
+    const accessToken = deps.jwt.signAccess({ sub: user.id, role: user.role });
+    return {
+      accessToken,
+      refreshToken: rotated.rawToken,
+      refreshExpiresAt: rotated.expiresAt,
+      user,
+    };
+  }
+
+  async function logout(input: { rawToken?: string | undefined }): Promise<void> {
+    if (input.rawToken) await deps.refresh.revokeByToken(input.rawToken);
+  }
+
+  async function getMe(userId: number): Promise<UserRow> {
+    const user = await deps.users.findById(userId);
+    if (!user) throw new AuthError('TOKEN_EXPIRED', 'user not found');
+    return user;
+  }
+
+  return { login, issueFreshTokens, verifyMfa, refreshSession, logout, getMe };
 }
 
 export function setRefreshCookie(res: Response, token: string, expiresAt: Date): void {

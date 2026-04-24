@@ -39,7 +39,7 @@ describe('POST /api/auth/login (no MFA)', () => {
     app.set('trust proxy', 1);
     app.use(cookieParser());
     app.use(express.json());
-    app.use('/api/auth', createAuthRouter({ service }));
+    app.use('/api/auth', createAuthRouter({ service, jwt }));
     app.use(errorHandler());
   });
 
