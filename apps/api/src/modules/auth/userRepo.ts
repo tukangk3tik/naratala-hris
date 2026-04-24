@@ -63,7 +63,10 @@ export function createUserRepo(db: DB): UserRepo {
         .where(eq(users.id, id));
     },
     async updateMfa(id, enabled, secret) {
-      await db.update(users).set({ mfaEnabled: enabled, mfaSecret: secret }).where(eq(users.id, id));
+      await db
+        .update(users)
+        .set({ mfaEnabled: enabled, mfaSecret: secret as unknown as string | null })
+        .where(eq(users.id, id));
     },
     async patch(id, p) {
       if (Object.keys(p).length === 0) return;

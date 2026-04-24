@@ -11,6 +11,8 @@ import { createRefreshTokenService } from './refreshTokenService.js';
 import { createJwtService } from './jwt.js';
 import { createAuthService } from './authService.js';
 import { createAuthRouter } from './authRoutes.js';
+import { createPasswordResetRepo } from './passwordResetRepo.js';
+import { createMailer } from '../../shared/mail/mailer.js';
 import { errorHandler } from '../../shared/middlewares/errorHandler.js';
 import { users } from '../../shared/db/schema.js';
 
@@ -34,6 +36,13 @@ describe('POST /api/auth/login (no MFA)', () => {
       jwt,
       refresh,
       refreshTtlMs: 30 * 24 * 60 * 60 * 1000,
+      passwordResets: createPasswordResetRepo(ctx.db),
+      mailer: createMailer({
+        transport: { sendMail: async () => undefined } as any,
+        from: 'x@y.co',
+      }),
+      appUrl: 'http://localhost:5173',
+      hibp: async () => '',
     });
     app = express();
     app.set('trust proxy', 1);

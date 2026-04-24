@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { LoginBody, MfaVerifyBody } from '@naratala/shared';
+import {
+  LoginBody,
+  MfaVerifyBody,
+  PasswordChangeBody,
+  PasswordForgotBody,
+  PasswordResetBody,
+} from '@naratala/shared';
 import { validate } from '../../shared/middlewares/validate.js';
 import { limiters } from '../../shared/middlewares/rateLimit.js';
 import type { AuthService } from './authService.js';
@@ -21,11 +27,12 @@ export function createAuthRouter(deps: { service: AuthService; jwt: JwtService }
     async (req, res, next) => {
       try {
         const body = req.valid.body as { email: string; password: string };
+        const ua = req.header('user-agent');
         const result = await deps.service.login({
           email: body.email,
           password: body.password,
           ip: req.ip ?? 'unknown',
-          userAgent: req.header('user-agent') ?? undefined,
+          ...(ua ? { userAgent: ua } : {}),
         });
         if (result.kind === 'mfa')
           return res.json({ mfaRequired: true, mfaToken: result.mfaToken });
@@ -44,11 +51,12 @@ export function createAuthRouter(deps: { service: AuthService; jwt: JwtService }
       if (scheme?.toLowerCase() !== 'bearer' || !token)
         throw new AuthError('MFA_INVALID', 'missing mfa token');
       const body = req.valid.body as { code: string };
+      const ua = req.header('user-agent');
       const out = await deps.service.verifyMfa({
         mfaToken: token,
         code: body.code,
         ip: req.ip ?? 'unknown',
-        userAgent: req.header('user-agent') ?? undefined,
+        ...(ua ? { userAgent: ua } : {}),
       });
       setRefreshCookie(res, out.refreshToken, out.refreshExpiresAt);
       return res.json({ accessToken: out.accessToken, user: toUserDTO(out.user) });
@@ -61,10 +69,11 @@ export function createAuthRouter(deps: { service: AuthService; jwt: JwtService }
     try {
       const rt = (req as { cookies?: { rt?: string } }).cookies?.rt;
       if (!rt) throw new AuthError('TOKEN_EXPIRED', 'missing refresh cookie');
+      const ua = req.header('user-agent');
       const out = await deps.service.refreshSession({
         rawToken: rt,
         ip: req.ip ?? 'unknown',
-        userAgent: req.header('user-agent') ?? undefined,
+        ...(ua ? { userAgent: ua } : {}),
       });
       setRefreshCookie(res, out.refreshToken, out.refreshExpiresAt);
       return res.json({ accessToken: out.accessToken, user: toUserDTO(out.user) });
@@ -88,6 +97,51 @@ export function createAuthRouter(deps: { service: AuthService; jwt: JwtService }
     try {
       const user = await deps.service.getMe(req.user!.sub);
       return res.json({ user: toUserDTO(user) });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.post(
+    '/password/change',
+    authenticate,
+    validate({ body: PasswordChangeBody }),
+    async (req, res, next) => {
+      try {
+        const body = req.valid.body as { currentPassword: string; newPassword: string };
+        await deps.service.changePassword(
+          req.user!.sub,
+          body.currentPassword,
+          body.newPassword,
+        );
+        return res.json({ ok: true });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  r.post(
+    '/password/forgot',
+    limiters.forgotByEmail(),
+    limiters.forgotByIp(),
+    validate({ body: PasswordForgotBody }),
+    async (req, res, next) => {
+      try {
+        const body = req.valid.body as { email: string };
+        await deps.service.requestForgot(body.email);
+        return res.json({ ok: true });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  r.post('/password/reset', validate({ body: PasswordResetBody }), async (req, res, next) => {
+    try {
+      const body = req.valid.body as { token: string; newPassword: string };
+      await deps.service.resetPassword(body.token, body.newPassword);
+      return res.json({ ok: true });
     } catch (err) {
       next(err);
     }

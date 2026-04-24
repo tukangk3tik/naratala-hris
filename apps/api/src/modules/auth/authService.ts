@@ -4,7 +4,17 @@ import type { UserRepo, UserRow } from './userRepo.js';
 import type { LoginAttemptRepo } from './loginAttemptRepo.js';
 import type { JwtService } from './jwt.js';
 import type { RefreshTokenService } from './refreshTokenService.js';
-import { DUMMY_BCRYPT_HASH, verifyPassword } from './password.js';
+import {
+  DUMMY_BCRYPT_HASH,
+  verifyPassword,
+  hashPassword,
+  assertPasswordStrong,
+  checkPwned,
+} from './password.js';
+import { newOpaqueToken, sha256Hex } from './opaqueToken.js';
+import type { PasswordResetRepo } from './passwordResetRepo.js';
+import type { Mailer } from '../../shared/mail/mailer.js';
+import { passwordResetEmail } from '../../shared/mail/templates.js';
 
 interface Deps {
   users: UserRepo;
@@ -12,6 +22,10 @@ interface Deps {
   jwt: JwtService;
   refresh: RefreshTokenService;
   refreshTtlMs: number;
+  passwordResets: PasswordResetRepo;
+  mailer: Mailer;
+  appUrl: string;
+  hibp?: (prefix: string) => Promise<string>;
 }
 
 const LOCK_THRESHOLD = 10;
@@ -61,6 +75,9 @@ export interface AuthService {
   }>;
   logout: (input: { rawToken?: string | undefined }) => Promise<void>;
   getMe: (userId: number) => Promise<UserRow>;
+  changePassword: (userId: number, current: string, next: string) => Promise<void>;
+  requestForgot: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 export function createAuthService(deps: Deps): AuthService {
@@ -179,7 +196,60 @@ export function createAuthService(deps: Deps): AuthService {
     return user;
   }
 
-  return { login, issueFreshTokens, verifyMfa, refreshSession, logout, getMe };
+  async function changePassword(userId: number, current: string, next: string): Promise<void> {
+    const user = await deps.users.findById(userId);
+    if (!user) throw new AuthError('INVALID_CREDENTIALS', 'user not found');
+    if (!(await verifyPassword(current, user.passwordHash))) {
+      throw new AuthError('INVALID_CREDENTIALS', 'current password invalid');
+    }
+    assertPasswordStrong(next);
+    if (await checkPwned(next, deps.hibp))
+      throw new AuthError('PASSWORD_PWNED', 'password compromised');
+    const hash = await hashPassword(next);
+    await deps.users.updatePasswordHash(user.id, hash, false);
+    await deps.refresh.revokeAllForUser(user.id);
+  }
+
+  async function requestForgot(email: string): Promise<void> {
+    const start = Date.now();
+    const user = await deps.users.findByEmail(email);
+    if (user && user.status !== 'disabled') {
+      const raw = newOpaqueToken();
+      const expiresAt = new Date(Date.now() + 60 * 60_000);
+      await deps.passwordResets.insert(user.id, sha256Hex(raw), expiresAt);
+      const tmpl = passwordResetEmail({
+        url: `${deps.appUrl}/password/reset?token=${raw}`,
+        expiresAt,
+      });
+      await deps.mailer.send({ to: user.email, subject: tmpl.subject, html: tmpl.html });
+    }
+    const elapsed = Date.now() - start;
+    if (elapsed < 200) await new Promise((r) => setTimeout(r, 200 - elapsed));
+  }
+
+  async function resetPassword(token: string, newPassword: string): Promise<void> {
+    const found = await deps.passwordResets.findUsableByHash(sha256Hex(token), new Date());
+    if (!found) throw new AuthError('INVITE_EXPIRED', 'reset token invalid or expired');
+    assertPasswordStrong(newPassword);
+    if (await checkPwned(newPassword, deps.hibp))
+      throw new AuthError('PASSWORD_PWNED', 'password compromised');
+    const hash = await hashPassword(newPassword);
+    await deps.users.updatePasswordHash(found.userId, hash, false);
+    await deps.passwordResets.consume(found.id);
+    await deps.refresh.revokeAllForUser(found.userId);
+  }
+
+  return {
+    login,
+    issueFreshTokens,
+    verifyMfa,
+    refreshSession,
+    logout,
+    getMe,
+    changePassword,
+    requestForgot,
+    resetPassword,
+  };
 }
 
 export function setRefreshCookie(res: Response, token: string, expiresAt: Date): void {
