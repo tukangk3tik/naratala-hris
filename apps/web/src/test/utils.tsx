@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 
 interface Opts extends Omit<RenderOptions, 'wrapper'> {
   route?: string;
+  routeState?: unknown;
 }
 
 export function renderWithProviders(
@@ -16,10 +17,14 @@ export function renderWithProviders(
 ): RenderResult & { client: QueryClient } {
   const client = makeQueryClient();
   client.setDefaultOptions({ queries: { retry: false }, mutations: { retry: false } });
+  const initialEntry =
+    opts.routeState != null
+      ? { pathname: opts.route ?? '/', state: opts.routeState }
+      : (opts.route ?? '/');
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[opts.route ?? '/']}>
+        <MemoryRouter initialEntries={[initialEntry]}>
           <AuthProvider>{children}</AuthProvider>
           <Toaster />
         </MemoryRouter>
