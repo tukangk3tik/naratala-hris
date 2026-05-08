@@ -8,6 +8,7 @@ import { MfaChallengePage } from '../features/auth/MfaChallengePage.js';
 import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage.js';
 import { ResetPasswordPage } from '../features/auth/ResetPasswordPage.js';
 import { AcceptInvitePage } from '../features/auth/AcceptInvitePage.js';
+import { DepartmentsPage } from '../features/departments/DepartmentsPage.js';
 
 function Placeholder({ name }: { name: string }) {
   return <div data-testid={`page-${name}`}>{name}</div>;
@@ -26,7 +27,7 @@ export function AppRoutes(): JSX.Element {
           <Route index element={<Navigate to="/employees" replace />} />
           <Route path="/employees" element={<Placeholder name="employees" />} />
           <Route path="/employees/:id" element={<Placeholder name="employees" />} />
-          <Route path="/departments" element={<Placeholder name="departments" />} />
+          <Route path="/departments" element={<DepartmentsPage />} />
           <Route
             path="/users"
             element={
