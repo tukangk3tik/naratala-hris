@@ -10,10 +10,9 @@ import { ResetPasswordPage } from '../features/auth/ResetPasswordPage.js';
 import { AcceptInvitePage } from '../features/auth/AcceptInvitePage.js';
 import { DepartmentsPage } from '../features/departments/DepartmentsPage.js';
 import { EmployeesPage } from '../features/employees/EmployeesPage.js';
-
-function Placeholder({ name }: { name: string }) {
-  return <div data-testid={`page-${name}`}>{name}</div>;
-}
+import { UsersPage } from '../features/users/UsersPage.js';
+import { AuditPage } from '../features/audit/AuditPage.js';
+import { ProfilePage } from '../features/settings/ProfilePage.js';
 
 export function AppRoutes(): JSX.Element {
   return (
@@ -33,7 +32,7 @@ export function AppRoutes(): JSX.Element {
             path="/users"
             element={
               <RequirePermission perm="users:read">
-                <Placeholder name="users" />
+                <UsersPage />
               </RequirePermission>
             }
           />
@@ -41,11 +40,11 @@ export function AppRoutes(): JSX.Element {
             path="/audit"
             element={
               <RequirePermission perm="audit:read">
-                <Placeholder name="audit" />
+                <AuditPage />
               </RequirePermission>
             }
           />
-          <Route path="/settings/profile" element={<Placeholder name="profile" />} />
+          <Route path="/settings/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
