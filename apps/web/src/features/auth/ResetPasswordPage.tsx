@@ -35,8 +35,9 @@ export function ResetPasswordPage(): JSX.Element {
         setExpired(true);
         return;
       }
-      if (e instanceof ApiError && e.fields?.['newPassword']) {
-        setError('password', { message: e.fields['newPassword'][0] });
+      const msg = e instanceof ApiError ? e.fields?.['newPassword']?.[0] : undefined;
+      if (msg) {
+        setError('password', { message: msg });
         return;
       }
       toast.error(e instanceof ApiError ? e.message : 'Reset failed');

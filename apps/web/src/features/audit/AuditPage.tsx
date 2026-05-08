@@ -12,7 +12,14 @@ export function AuditPage(): JSX.Element {
         <select
           aria-label="action"
           value={filters.action ?? ''}
-          onChange={(e) => setFilters((f) => ({ ...f, action: e.target.value || undefined }))}
+          onChange={(e) => {
+            const v = e.target.value;
+            setFilters((f) => {
+              if (v) return { ...f, action: v };
+              const { action: _, ...rest } = f;
+              return rest;
+            });
+          }}
         >
           <option value="">All actions</option>
           <option value="employee.update">employee.update</option>
@@ -24,7 +31,14 @@ export function AuditPage(): JSX.Element {
         <select
           aria-label="entityType"
           value={filters.entityType ?? ''}
-          onChange={(e) => setFilters((f) => ({ ...f, entityType: e.target.value || undefined }))}
+          onChange={(e) => {
+            const v = e.target.value;
+            setFilters((f) => {
+              if (v) return { ...f, entityType: v };
+              const { entityType: _, ...rest } = f;
+              return rest;
+            });
+          }}
         >
           <option value="">All entities</option>
           <option value="employee">employee</option>

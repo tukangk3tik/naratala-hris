@@ -39,8 +39,9 @@ export function AcceptInvitePage(): JSX.Element {
       nav('/employees', { replace: true });
     },
     onError: (e) => {
-      if (e instanceof ApiError && e.fields?.['password']) {
-        setError('password', { message: e.fields['password'][0] });
+      const msg = e instanceof ApiError ? e.fields?.['password']?.[0] : undefined;
+      if (msg) {
+        setError('password', { message: msg });
         return;
       }
       toast.error(e instanceof ApiError ? e.message : 'Accept failed');

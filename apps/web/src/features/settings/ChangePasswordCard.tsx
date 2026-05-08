@@ -28,8 +28,9 @@ export function ChangePasswordCard(): JSX.Element {
       nav('/login', { replace: true });
     },
     onError: (e) => {
-      if (e instanceof ApiError && e.fields?.['newPassword']) {
-        setError('newPassword', { message: e.fields['newPassword'][0] });
+      const msg = e instanceof ApiError ? e.fields?.['newPassword']?.[0] : undefined;
+      if (msg) {
+        setError('newPassword', { message: msg });
         return;
       }
       toast.error(e instanceof ApiError ? e.message : 'Change failed');

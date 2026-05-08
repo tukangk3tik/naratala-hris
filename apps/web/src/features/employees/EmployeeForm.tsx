@@ -65,7 +65,8 @@ export function EmployeeForm({
             onError: (err) => {
               if (err instanceof ApiError && err.fields) {
                 for (const [k, v2] of Object.entries(err.fields)) {
-                  setError(k as keyof Input, { message: v2[0] });
+                  const msg = v2[0];
+                  if (msg) setError(k as keyof Input, { message: msg });
                 }
                 return;
               }

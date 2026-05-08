@@ -13,9 +13,15 @@ export function EmployeeFilters({
   const dq = useDepartmentsQuery();
 
   useEffect(() => {
-    const t = setTimeout(() => onChange({ ...value, q: q || undefined }), 300);
+    const t = setTimeout(() => {
+      if (q) {
+        onChange({ ...value, q });
+      } else {
+        const { q: _q, ...rest } = value;
+        onChange(rest);
+      }
+    }, 300);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
   return (
@@ -24,9 +30,14 @@ export function EmployeeFilters({
       <select
         aria-label="department"
         value={value.department ?? ''}
-        onChange={(e) =>
-          onChange({ ...value, department: e.target.value ? Number(e.target.value) : undefined })
-        }
+        onChange={(e) => {
+          if (e.target.value) {
+            onChange({ ...value, department: Number(e.target.value) });
+          } else {
+            const { department: _d, ...rest } = value;
+            onChange(rest);
+          }
+        }}
       >
         <option value="">All departments</option>
         {dq.data?.data.map((d) => (
@@ -38,9 +49,14 @@ export function EmployeeFilters({
       <select
         aria-label="status"
         value={value.status ?? ''}
-        onChange={(e) =>
-          onChange({ ...value, status: (e.target.value || undefined) as F['status'] })
-        }
+        onChange={(e) => {
+          if (e.target.value) {
+            onChange({ ...value, status: e.target.value as NonNullable<F['status']> });
+          } else {
+            const { status: _s, ...rest } = value;
+            onChange(rest);
+          }
+        }}
       >
         <option value="">All statuses</option>
         <option value="active">Active</option>
