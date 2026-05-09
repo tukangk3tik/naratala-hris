@@ -6,7 +6,7 @@ import { RequestDetail } from './RequestDetail.js';
 
 export function AbsenceQueuePage(): JSX.Element {
   const [filter, setFilter] = useState<'pending' | 'approved' | undefined>('pending');
-  const q = useLeaveRequestsQuery({ status: filter, page: 1, pageSize: 50 });
+  const q = useLeaveRequestsQuery({ ...(filter !== undefined ? { status: filter } : {}), page: 1, pageSize: 50 });
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const selected: LeaveRequestDTO | null = q.data?.data.find((r) => r.id === selectedId) ?? q.data?.data[0] ?? null;
   return (

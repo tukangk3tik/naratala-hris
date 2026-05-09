@@ -39,7 +39,7 @@ export function RequestDetail({ request, onActed }: { request: LeaveRequestDTO; 
             disabled={approve.isPending}
             onClick={() =>
               approve.mutate(
-                { id: request.id, note: note || undefined },
+                { id: request.id, ...(note ? { note } : {}) },
                 {
                   onSuccess: () => onActed(),
                   onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Approve failed'),
@@ -54,7 +54,7 @@ export function RequestDetail({ request, onActed }: { request: LeaveRequestDTO; 
             disabled={decline.isPending}
             onClick={() =>
               decline.mutate(
-                { id: request.id, note: note || undefined },
+                { id: request.id, ...(note ? { note } : {}) },
                 {
                   onSuccess: () => onActed(),
                   onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Decline failed'),

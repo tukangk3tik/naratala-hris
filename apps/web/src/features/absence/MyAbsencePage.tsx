@@ -13,7 +13,7 @@ export function MyAbsencePage(): JSX.Element {
   const [showNew, setShowNew] = useState(false);
   const year = new Date().getUTCFullYear();
   const balances = useBalancesQuery(null, year);
-  const requests = useLeaveRequestsQuery({ employeeId: undefined, page: 1, pageSize: 50 });
+  const requests = useLeaveRequestsQuery({ page: 1, pageSize: 50 });
   const cancel = useCancelRequest();
   if (!user) return <p>—</p>;
   return (

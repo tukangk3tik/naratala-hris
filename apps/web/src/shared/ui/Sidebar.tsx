@@ -11,6 +11,12 @@ interface Item {
 const ITEMS: Item[] = [
   { to: '/employees', label: 'Employees', perm: 'employees:read:any' },
   { to: '/departments', label: 'Departments' },
+  { to: '/absence/me', label: 'My time off', perm: 'absence:read:self' },
+  { to: '/absence', label: 'Absence queue', perm: 'absence:approve:reports' },
+  { to: '/absence/calendar', label: 'Calendar', perm: 'absence:read:self' },
+  { to: '/absence/settings/policies', label: 'Leave policies', perm: 'absence:configure' },
+  { to: '/absence/settings/holidays', label: 'Holidays', perm: 'absence:configure' },
+  { to: '/absence/settings/schedule', label: 'Working schedule', perm: 'absence:configure' },
   { to: '/users', label: 'Users', perm: 'users:read' },
   { to: '/audit', label: 'Audit', perm: 'audit:read' },
   { to: '/settings/profile', label: 'Profile' },
