@@ -11,6 +11,8 @@ import {
   PasswordChangeBody,
   PasswordResetBody,
   PasswordForgotBody,
+  PayRunCreate,
+  PayslipPatch,
 } from './index.js';
 
 describe('auth schemas', () => {
@@ -152,5 +154,53 @@ describe('absence schemas', () => {
   it('LeaveDecisionBody allows empty + note', () => {
     expect(LeaveDecisionBody.parse({}).note).toBeUndefined();
     expect(LeaveDecisionBody.parse({ note: 'ok' }).note).toBe('ok');
+  });
+});
+
+describe('PayRunCreate', () => {
+  it('accepts valid input', () => {
+    expect(
+      PayRunCreate.safeParse({
+        name: 'May 2026 Monthly',
+        periodStart: '2026-05-01',
+        periodEnd: '2026-05-31',
+      }).success,
+    ).toBe(true);
+  });
+
+  it('rejects empty name', () => {
+    expect(
+      PayRunCreate.safeParse({ name: '', periodStart: '2026-05-01', periodEnd: '2026-05-31' }).success,
+    ).toBe(false);
+  });
+
+  it('rejects invalid date format', () => {
+    expect(
+      PayRunCreate.safeParse({ name: 'X', periodStart: '05-01-2026', periodEnd: '2026-05-31' }).success,
+    ).toBe(false);
+  });
+
+  it('rejects periodEnd before periodStart', () => {
+    expect(
+      PayRunCreate.safeParse({ name: 'X', periodStart: '2026-05-31', periodEnd: '2026-05-01' }).success,
+    ).toBe(false);
+  });
+});
+
+describe('PayslipPatch', () => {
+  it('accepts deductionAmount only', () => {
+    expect(PayslipPatch.safeParse({ deductionAmount: '500000.00' }).success).toBe(true);
+  });
+
+  it('accepts notes only', () => {
+    expect(PayslipPatch.safeParse({ notes: 'adjusted' }).success).toBe(true);
+  });
+
+  it('rejects empty object', () => {
+    expect(PayslipPatch.safeParse({}).success).toBe(false);
+  });
+
+  it('rejects non-decimal deductionAmount', () => {
+    expect(PayslipPatch.safeParse({ deductionAmount: 'abc' }).success).toBe(false);
   });
 });

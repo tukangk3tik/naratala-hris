@@ -14,6 +14,9 @@ const TITLES: Record<string, string> = {
   '/absence/settings/holidays': 'Holidays',
   '/absence/settings/schedule': 'Working schedule',
   '/absence': 'Absence queue',
+  '/payroll/me': 'My payslips',
+  '/payroll/runs': 'Pay run detail',
+  '/payroll': 'Payroll',
 };
 
 export function Shell(): JSX.Element {

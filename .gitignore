@@ -50,3 +50,4 @@ Thumbs.db
 
 # drizzle
 apps/api/drizzle/meta/_journal.json.bak
+.worktrees/

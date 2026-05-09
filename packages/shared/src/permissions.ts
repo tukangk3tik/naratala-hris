@@ -20,7 +20,10 @@ export type Permission =
   | 'absence:write:any'
   | 'absence:approve:reports'
   | 'absence:approve:any'
-  | 'absence:configure';
+  | 'absence:configure'
+  | 'payroll:read:any'
+  | 'payroll:read:self'
+  | 'payroll:manage';
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   admin: [
@@ -43,6 +46,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'absence:approve:reports',
     'absence:approve:any',
     'absence:configure',
+    'payroll:read:any',
+    'payroll:read:self',
+    'payroll:manage',
   ],
   hr: [
     'employees:read:any',
@@ -59,6 +65,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'absence:write:any',
     'absence:approve:any',
     'absence:configure',
+    'payroll:read:any',
+    'payroll:read:self',
+    'payroll:manage',
   ],
   manager: [
     'employees:read:any',
@@ -69,12 +78,14 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'absence:write:self',
     'absence:write:any',
     'absence:approve:reports',
+    'payroll:read:self',
   ],
   employee: [
     'employees:read:any',
     'employees:read:self',
     'absence:read:self',
     'absence:write:self',
+    'payroll:read:self',
   ],
 };
 

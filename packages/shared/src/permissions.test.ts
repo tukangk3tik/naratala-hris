@@ -51,4 +51,25 @@ describe('permissions', () => {
     expect(hasPermission('employee', 'absence:write:self')).toBe(true);
     expect(hasPermission('employee', 'absence:read:any')).toBe(false);
   });
+
+  it('payroll:read:any — admin and hr only', () => {
+    expect(hasPermission('admin', 'payroll:read:any')).toBe(true);
+    expect(hasPermission('hr', 'payroll:read:any')).toBe(true);
+    expect(hasPermission('manager', 'payroll:read:any')).toBe(false);
+    expect(hasPermission('employee', 'payroll:read:any')).toBe(false);
+  });
+
+  it('payroll:read:self — all roles', () => {
+    expect(hasPermission('admin', 'payroll:read:self')).toBe(true);
+    expect(hasPermission('hr', 'payroll:read:self')).toBe(true);
+    expect(hasPermission('manager', 'payroll:read:self')).toBe(true);
+    expect(hasPermission('employee', 'payroll:read:self')).toBe(true);
+  });
+
+  it('payroll:manage — admin and hr only', () => {
+    expect(hasPermission('admin', 'payroll:manage')).toBe(true);
+    expect(hasPermission('hr', 'payroll:manage')).toBe(true);
+    expect(hasPermission('manager', 'payroll:manage')).toBe(false);
+    expect(hasPermission('employee', 'payroll:manage')).toBe(false);
+  });
 });

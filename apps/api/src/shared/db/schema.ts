@@ -6,6 +6,7 @@ import {
   date,
   decimal,
   index,
+  int,
   json,
   mysqlEnum,
   mysqlTable,
@@ -283,5 +284,49 @@ export const leaveRequests = mysqlTable(
     empFromIdx: index('leave_requests_emp_from_idx').on(t.employeeId, t.fromDate),
     statusFromIdx: index('leave_requests_status_from_idx').on(t.status, t.fromDate),
     fromIdx: index('leave_requests_from_idx').on(t.fromDate),
+  }),
+);
+
+export const payRuns = mysqlTable(
+  'pay_runs',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    name: varchar('name', { length: 100 }).notNull(),
+    periodStart: date('period_start', { mode: 'string' }).notNull(),
+    periodEnd: date('period_end', { mode: 'string' }).notNull(),
+    currency: char('currency', { length: 3 }).notNull().default('IDR'),
+    status: mysqlEnum('status', ['draft', 'finalized', 'cancelled']).notNull().default('draft'),
+    notes: varchar('notes', { length: 500 }),
+    totalGross: decimal('total_gross', { precision: 18, scale: 2 }),
+    totalNet: decimal('total_net', { precision: 18, scale: 2 }),
+    headcount: int('headcount', { unsigned: true }),
+    createdByUserId: bigint('created_by_user_id', { mode: 'number', unsigned: true }).notNull(),
+    finalizedByUserId: bigint('finalized_by_user_id', { mode: 'number', unsigned: true }),
+    finalizedAt: datetime('finalized_at', { fsp: 3 }),
+    ...ts,
+  },
+  (t) => ({
+    statusIdx: index('pay_runs_status_idx').on(t.status),
+    periodStartIdx: index('pay_runs_period_start_idx').on(t.periodStart),
+  }),
+);
+
+export const payslips = mysqlTable(
+  'payslips',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    payRunId: bigint('pay_run_id', { mode: 'number', unsigned: true }).notNull(),
+    employeeId: bigint('employee_id', { mode: 'number', unsigned: true }).notNull(),
+    grossAmount: decimal('gross_amount', { precision: 14, scale: 2 }).notNull(),
+    deductionAmount: decimal('deduction_amount', { precision: 14, scale: 2 }).notNull().default('0.00'),
+    netAmount: decimal('net_amount', { precision: 14, scale: 2 }).notNull(),
+    notes: varchar('notes', { length: 500 }),
+    salarySnapshot: json('salary_snapshot').$type<{ amount: string; currency: string }>().notNull(),
+    ...ts,
+  },
+  (t) => ({
+    payRunEmpUnique: uniqueIndex('payslips_pay_run_emp_unique').on(t.payRunId, t.employeeId),
+    payRunIdx: index('payslips_pay_run_idx').on(t.payRunId),
+    employeeIdx: index('payslips_employee_idx').on(t.employeeId),
   }),
 );

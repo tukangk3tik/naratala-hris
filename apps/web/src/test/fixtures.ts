@@ -1,4 +1,4 @@
-import type { UserDTO, EmployeeDTO, DepartmentDTO, LeaveRequestDTO, BalanceDTO, HolidayDTO, LeavePolicyDTO } from '@naratala/shared';
+import type { UserDTO, EmployeeDTO, DepartmentDTO, LeaveRequestDTO, BalanceDTO, HolidayDTO, LeavePolicyDTO, PayRunDetailDTO, PayslipDTO, PayrollSummaryDTO } from '@naratala/shared';
 
 export const adminUser: UserDTO = {
   id: 1,
@@ -102,3 +102,41 @@ export const samplePolicies: LeavePolicyDTO[] = [
   { id: 5, leaveType: 'parental', defaultDaysPerYear: '90.00', isPaid: true, affectsBalance: true },
   { id: 6, leaveType: 'unpaid', defaultDaysPerYear: '0.00', isPaid: false, affectsBalance: false },
 ];
+
+export const samplePayslip: PayslipDTO = {
+  id: 1,
+  payRunId: 1,
+  employeeId: 10,
+  employeeName: 'Sample Person',
+  department: 'Engineering',
+  grossAmount: '1000000.00',
+  deductionAmount: '0.00',
+  netAmount: '1000000.00',
+  notes: null,
+  salarySnapshot: { amount: '12000000.00', currency: 'IDR' },
+};
+
+export const samplePayRun: PayRunDetailDTO = {
+  id: 1,
+  name: 'May 2026 Monthly',
+  periodStart: '2026-05-01',
+  periodEnd: '2026-05-31',
+  currency: 'IDR',
+  status: 'draft',
+  notes: null,
+  totalGross: null,
+  totalNet: null,
+  headcount: null,
+  createdAt: '2026-05-09T00:00:00.000Z',
+  finalizedAt: null,
+  payslips: [samplePayslip],
+};
+
+export const sampleSummary: PayrollSummaryDTO = {
+  months: [
+    { month: '2026-05', total: '1000000.00', headcount: 1 },
+  ],
+  deptBreakdown: [
+    { deptId: 1, deptName: 'Engineering', total: '1000000.00' },
+  ],
+};

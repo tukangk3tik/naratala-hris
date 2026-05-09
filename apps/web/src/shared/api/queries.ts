@@ -19,6 +19,12 @@ export const qk = {
     policies: () => ['absence', 'policies'] as const,
     schedule: () => ['absence', 'schedule'] as const,
   },
+  payroll: {
+    runs: (filters: Record<string, unknown>) => ['payroll', 'runs', filters] as const,
+    runDetail: (id: number) => ['payroll', 'run', id] as const,
+    summary: () => ['payroll', 'summary'] as const,
+    mine: (page: number) => ['payroll', 'mine', page] as const,
+  },
 };
 
 export function makeQueryClient(): QueryClient {
