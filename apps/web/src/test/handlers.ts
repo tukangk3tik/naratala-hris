@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { adminUser, dept, sampleEmployee, sampleRequest, sampleBalances, sampleHoliday, samplePolicies } from './fixtures.js';
+import { adminUser, dept, sampleEmployee, sampleRequest, sampleBalances, sampleHoliday, samplePolicies, samplePayRun, sampleSummary, samplePayslip } from './fixtures.js';
 
 export const defaultHandlers = [
   http.get('/api/auth/me', () => HttpResponse.json({ user: adminUser })),
@@ -31,5 +31,13 @@ export const defaultHandlers = [
   http.get('/api/leave-policies', () => HttpResponse.json({ data: samplePolicies })),
   http.get('/api/working-schedule', () =>
     HttpResponse.json({ defaultWorkingDays: 62, perEmployeeOverrides: [] }),
+  ),
+  http.get('/api/payroll/runs', () =>
+    HttpResponse.json({ data: [samplePayRun], page: 1, pageSize: 25, total: 1 }),
+  ),
+  http.get('/api/payroll/runs/:id', () => HttpResponse.json(samplePayRun)),
+  http.get('/api/payroll/summary', () => HttpResponse.json(sampleSummary)),
+  http.get('/api/payroll/me', () =>
+    HttpResponse.json({ data: [samplePayslip], page: 1, pageSize: 25 }),
   ),
 ];
