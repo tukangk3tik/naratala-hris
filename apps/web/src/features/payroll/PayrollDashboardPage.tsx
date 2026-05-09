@@ -41,7 +41,13 @@ export function PayrollDashboardPage(): JSX.Element {
   const maxHc = Math.max(...months.map((m) => m.headcount), 1);
 
   function onSubmit(v: z.infer<typeof PayRunCreate>) {
-    createMut.mutate(v, {
+    createMut.mutate({
+      name: v.name,
+      periodStart: v.periodStart,
+      periodEnd: v.periodEnd,
+      ...(v.currency !== undefined ? { currency: v.currency } : {}),
+      ...(v.notes !== undefined ? { notes: v.notes } : {}),
+    }, {
       onSuccess: () => { toast.success('Pay run created'); form.reset(); },
       onError: (e: unknown) => { toast.error(e instanceof Error ? e.message : 'Error'); },
     });
