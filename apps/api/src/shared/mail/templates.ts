@@ -30,6 +30,47 @@ export function passwordResetEmail(args: {
   };
 }
 
+export function leaveRequestSubmittedEmail(args: {
+  approverName: string;
+  employeeName: string;
+  leaveType: string;
+  fromDate: string;
+  toDate: string;
+  days: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Time-off request: ${args.employeeName}`,
+    html: `<p>${escape(args.employeeName)} requested ${escape(args.leaveType)} from ${escape(args.fromDate)} to ${escape(args.toDate)} (${escape(args.days)} days).</p><p>Please review in Naratala HRIS.</p>`,
+  };
+}
+
+export function leaveRequestDecidedEmail(args: {
+  employeeName: string;
+  leaveType: string;
+  fromDate: string;
+  toDate: string;
+  decision: 'approved' | 'declined';
+  note?: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Your time-off request was ${args.decision}`,
+    html: `<p>Your ${escape(args.leaveType)} request (${escape(args.fromDate)} → ${escape(args.toDate)}) has been ${args.decision}.</p>${args.note ? `<p>Note: ${escape(args.note)}</p>` : ''}`,
+  };
+}
+
+export function leaveRequestCancelledEmail(args: {
+  approverName: string;
+  employeeName: string;
+  leaveType: string;
+  fromDate: string;
+  toDate: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `Time-off cancelled: ${args.employeeName}`,
+    html: `<p>${escape(args.employeeName)} cancelled their ${escape(args.leaveType)} request (${escape(args.fromDate)} → ${escape(args.toDate)}).</p>`,
+  };
+}
+
 const ENT: Record<string, string> = {
   '&': '&amp;',
   '<': '&lt;',

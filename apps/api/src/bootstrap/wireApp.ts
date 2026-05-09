@@ -25,6 +25,21 @@ import { createEmployeeRouter } from '../modules/employees/employeeRoutes.js';
 import { createAuditRepo } from '../modules/audit/auditRepo.js';
 import { createAuditService } from '../modules/audit/auditService.js';
 import { createAuditRouter } from '../modules/audit/auditRoutes.js';
+import { createHolidayRepo } from '../modules/absence/holidayRepo.js';
+import { createHolidayService } from '../modules/absence/holidayService.js';
+import { createLeavePolicyRepo } from '../modules/absence/leavePolicyRepo.js';
+import { createLeavePolicyService } from '../modules/absence/leavePolicyService.js';
+import { createWorkingScheduleRepo } from '../modules/absence/workingScheduleRepo.js';
+import { createWorkingScheduleService } from '../modules/absence/workingScheduleService.js';
+import { createLeaveQuotaRepo } from '../modules/absence/leaveQuotaRepo.js';
+import { createLeaveQuotaService } from '../modules/absence/leaveQuotaService.js';
+import { createBalanceService } from '../modules/absence/balanceService.js';
+import { createLeaveRequestRepo } from '../modules/absence/leaveRequestRepo.js';
+import { createLeaveRequestService } from '../modules/absence/leaveRequestService.js';
+import { createLeaveRequestRouter } from '../modules/absence/leaveRequestRoutes.js';
+import { createHolidayRouter } from '../modules/absence/holidayRoutes.js';
+import { createLeavePolicyRouter } from '../modules/absence/leavePolicyRoutes.js';
+import { createWorkingScheduleRouter } from '../modules/absence/workingScheduleRoutes.js';
 
 function ttlToMs(value: string): number {
   const m = /^(\d+)([smhd])$/.exec(value);
@@ -79,11 +94,30 @@ export function wireRoutes(app: Express, deps: { db: DB; env: Env }): void {
   const userSvc = createUserService({ users: userRepo, refresh });
   const auditRepo = createAuditRepo(db);
   const auditSvc = createAuditService(auditRepo);
+  const empRepo = createEmployeeRepo(db);
   const empSvc = createEmployeeService({
-    employees: createEmployeeRepo(db),
+    employees: empRepo,
     users: userRepo,
     audit: auditRepo,
     refresh,
+  });
+  const holidaySvc = createHolidayService(createHolidayRepo(db));
+  const policySvc = createLeavePolicyService(createLeavePolicyRepo(db));
+  const scheduleSvc = createWorkingScheduleService(createWorkingScheduleRepo(db));
+  const quotaSvc = createLeaveQuotaService({
+    quotas: createLeaveQuotaRepo(db),
+    policies: createLeavePolicyRepo(db),
+  });
+  const balanceSvc = createBalanceService({ db, quotas: quotaSvc });
+  const requestSvc = createLeaveRequestService({
+    db,
+    requests: createLeaveRequestRepo(db),
+    holidays: holidaySvc,
+    schedule: scheduleSvc,
+    users: userRepo,
+    employees: empRepo,
+    audit: auditRepo,
+    mailer,
   });
 
   app.use('/api/auth', createAuthRouter({ service: authSvc, jwt }));
@@ -92,4 +126,8 @@ export function wireRoutes(app: Express, deps: { db: DB; env: Env }): void {
   app.use('/api/users', createUserRouter({ service: userSvc, jwt }));
   app.use('/api/employees', createEmployeeRouter({ service: empSvc, jwt }));
   app.use('/api/audit', createAuditRouter({ service: auditSvc, jwt }));
+  app.use('/api/absence/requests', createLeaveRequestRouter({ service: requestSvc, balances: balanceSvc, employees: empRepo, jwt }));
+  app.use('/api/holidays', createHolidayRouter({ service: holidaySvc, jwt }));
+  app.use('/api/leave-policies', createLeavePolicyRouter({ service: policySvc, jwt }));
+  app.use('/api/working-schedule', createWorkingScheduleRouter({ schedule: scheduleSvc, quotas: quotaSvc, jwt }));
 }

@@ -24,6 +24,7 @@ export interface UserRow {
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRow | undefined>;
   findById(id: number): Promise<UserRow | undefined>;
+  listByRole(role: Role): Promise<UserRow[]>;
   setLastLogin(id: number, at: Date): Promise<void>;
   updatePasswordHash(id: number, hash: string, mustChange: boolean): Promise<void>;
   updateMfa(id: number, enabled: boolean, secret: Buffer | null): Promise<void>;
@@ -52,6 +53,10 @@ export function createUserRepo(db: DB): UserRepo {
         .where(and(eq(users.id, id), isNull(users.deletedAt)))
         .limit(1);
       return row as UserRow | undefined;
+    },
+    async listByRole(role) {
+      const rows = await db.select().from(users).where(eq(users.role, role));
+      return rows as UserRow[];
     },
     async setLastLogin(id, at) {
       await db.update(users).set({ lastLoginAt: at }).where(eq(users.id, id));
