@@ -4,3 +4,4 @@ export * from './employee.js';
 export * from './user.js';
 export * from './department.js';
 export * from './invite.js';
+export * from './absence.js';

@@ -105,3 +105,52 @@ describe('invite + user + department schemas', () => {
     expect(UserUpdate.safeParse({}).success).toBe(true);
   });
 });
+
+import {
+  LeaveType,
+  LeaveRequestCreate,
+  LeaveDecisionBody,
+  HolidayCreate,
+  WorkingScheduleUpdate,
+} from './absence.js';
+
+describe('absence schemas', () => {
+  it('LeaveType enum', () => {
+    expect(LeaveType.options).toContain('vacation');
+    expect(LeaveType.options).toContain('unpaid');
+  });
+
+  it('LeaveRequestCreate accepts valid input', () => {
+    const r = LeaveRequestCreate.parse({
+      leaveType: 'vacation',
+      fromDate: '2026-05-04',
+      toDate: '2026-05-08',
+    });
+    expect(r.leaveType).toBe('vacation');
+  });
+
+  it('LeaveRequestCreate rejects to<from', () => {
+    expect(() =>
+      LeaveRequestCreate.parse({
+        leaveType: 'vacation',
+        fromDate: '2026-05-08',
+        toDate: '2026-05-04',
+      }),
+    ).toThrow();
+  });
+
+  it('HolidayCreate validates date format', () => {
+    expect(() => HolidayCreate.parse({ date: 'bad', label: 'X' })).toThrow();
+    expect(HolidayCreate.parse({ date: '2026-05-01', label: 'Labor Day' }).label).toBe('Labor Day');
+  });
+
+  it('WorkingScheduleUpdate clamps to 0–127', () => {
+    expect(WorkingScheduleUpdate.parse({ workingDays: 62 }).workingDays).toBe(62);
+    expect(() => WorkingScheduleUpdate.parse({ workingDays: 256 })).toThrow();
+  });
+
+  it('LeaveDecisionBody allows empty + note', () => {
+    expect(LeaveDecisionBody.parse({}).note).toBeUndefined();
+    expect(LeaveDecisionBody.parse({ note: 'ok' }).note).toBe('ok');
+  });
+});

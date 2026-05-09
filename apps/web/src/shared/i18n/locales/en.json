@@ -20,6 +20,18 @@
     "linkExpired": "This link has expired.",
     "tryAgain": "Request a new one"
   },
+  "absence": {
+    "queue": "Absence queue",
+    "myTimeOff": "My time off",
+    "calendar": "Calendar",
+    "leavePolicies": "Leave policies",
+    "holidays": "Holidays",
+    "workingSchedule": "Working schedule",
+    "request": "Request time off",
+    "approve": "Approve",
+    "decline": "Decline",
+    "cancel": "Cancel"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

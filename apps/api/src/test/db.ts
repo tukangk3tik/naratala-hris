@@ -52,6 +52,11 @@ export async function createTestDb() {
     try {
       await conn.query('SET FOREIGN_KEY_CHECKS = 0');
       for (const table of [
+        'leave_requests',
+        'holidays',
+        'leave_quotas',
+        'leave_policies',
+        'company_settings',
         'audit_log',
         'login_attempts',
         'password_resets',

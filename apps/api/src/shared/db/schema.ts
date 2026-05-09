@@ -82,6 +82,7 @@ export const employees = mysqlTable(
     managerId: bigint('manager_id', { mode: 'number', unsigned: true }),
     salaryAmount: decimal('salary_amount', { precision: 14, scale: 2 }),
     salaryCurrency: char('salary_currency', { length: 3 }).notNull().default('IDR'),
+    workingDays: smallint('working_days'),
     avatarColorHue: smallint('avatar_color_hue').notNull(),
     ...ts,
     deletedAt: datetime('deleted_at', { fsp: 3 }),
@@ -185,5 +186,102 @@ export const auditLog = mysqlTable(
     actorIdx: index('audit_log_actor_idx').on(t.actorUserId),
     entityIdx: index('audit_log_entity_idx').on(t.entityType, t.entityId),
     createdIdx: index('audit_log_created_idx').on(t.createdAt),
+  }),
+);
+
+export const companySettings = mysqlTable('company_settings', {
+  id: bigint('id', { mode: 'number', unsigned: true }).primaryKey(),
+  defaultWorkingDays: smallint('default_working_days').notNull().default(62),
+  ...ts,
+});
+
+export const leavePolicies = mysqlTable(
+  'leave_policies',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    leaveType: mysqlEnum('leave_type', [
+      'vacation',
+      'sick',
+      'personal',
+      'bereavement',
+      'parental',
+      'unpaid',
+    ]).notNull(),
+    defaultDaysPerYear: decimal('default_days_per_year', { precision: 5, scale: 2 }).notNull(),
+    isPaid: boolean('is_paid').notNull(),
+    affectsBalance: boolean('affects_balance').notNull(),
+    ...ts,
+  },
+  (t) => ({ leaveTypeUnique: uniqueIndex('leave_policies_type_unique').on(t.leaveType) }),
+);
+
+export const leaveQuotas = mysqlTable(
+  'leave_quotas',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    employeeId: bigint('employee_id', { mode: 'number', unsigned: true }).notNull(),
+    leaveType: mysqlEnum('leave_type', [
+      'vacation',
+      'sick',
+      'personal',
+      'bereavement',
+      'parental',
+      'unpaid',
+    ]).notNull(),
+    daysPerYear: decimal('days_per_year', { precision: 5, scale: 2 }).notNull(),
+    ...ts,
+  },
+  (t) => ({
+    empTypeUnique: uniqueIndex('leave_quotas_emp_type_unique').on(t.employeeId, t.leaveType),
+  }),
+);
+
+export const holidays = mysqlTable(
+  'holidays',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    date: date('date', { mode: 'string' }).notNull(),
+    label: varchar('label', { length: 120 }).notNull(),
+    recurringAnnually: boolean('recurring_annually').notNull().default(false),
+    ...ts,
+  },
+  (t) => ({
+    dateLabelUnique: uniqueIndex('holidays_date_label_unique').on(t.date, t.label),
+    dateIdx: index('holidays_date_idx').on(t.date),
+  }),
+);
+
+export const leaveRequests = mysqlTable(
+  'leave_requests',
+  {
+    id: bigint('id', { mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+    employeeId: bigint('employee_id', { mode: 'number', unsigned: true }).notNull(),
+    actorUserId: bigint('actor_user_id', { mode: 'number', unsigned: true }).notNull(),
+    leaveType: mysqlEnum('leave_type', [
+      'vacation',
+      'sick',
+      'personal',
+      'bereavement',
+      'parental',
+      'unpaid',
+    ]).notNull(),
+    fromDate: date('from_date', { mode: 'string' }).notNull(),
+    toDate: date('to_date', { mode: 'string' }).notNull(),
+    days: decimal('days', { precision: 5, scale: 2 }).notNull(),
+    reason: varchar('reason', { length: 500 }),
+    status: mysqlEnum('status', ['pending', 'approved', 'declined', 'cancelled'])
+      .notNull()
+      .default('pending'),
+    decidedByUserId: bigint('decided_by_user_id', { mode: 'number', unsigned: true }),
+    decidedAt: datetime('decided_at', { fsp: 3 }),
+    decisionNote: varchar('decision_note', { length: 500 }),
+    cancelledByUserId: bigint('cancelled_by_user_id', { mode: 'number', unsigned: true }),
+    cancelledAt: datetime('cancelled_at', { fsp: 3 }),
+    ...ts,
+  },
+  (t) => ({
+    empFromIdx: index('leave_requests_emp_from_idx').on(t.employeeId, t.fromDate),
+    statusFromIdx: index('leave_requests_status_from_idx').on(t.status, t.fromDate),
+    fromIdx: index('leave_requests_from_idx').on(t.fromDate),
   }),
 );

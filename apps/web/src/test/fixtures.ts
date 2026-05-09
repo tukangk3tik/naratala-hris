@@ -1,4 +1,4 @@
-import type { UserDTO, EmployeeDTO, DepartmentDTO } from '@naratala/shared';
+import type { UserDTO, EmployeeDTO, DepartmentDTO, LeaveRequestDTO, BalanceDTO, HolidayDTO, LeavePolicyDTO } from '@naratala/shared';
 
 export const adminUser: UserDTO = {
   id: 1,
@@ -55,3 +55,50 @@ export const sampleEmployee: EmployeeDTO = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
+
+export const sampleRequest: LeaveRequestDTO = {
+  id: 1,
+  employeeId: sampleEmployee.id,
+  employeeName: sampleEmployee.fullName,
+  actorUserId: 1,
+  leaveType: 'vacation',
+  fromDate: '2026-06-01',
+  toDate: '2026-06-05',
+  days: '5.00',
+  reason: 'family trip',
+  status: 'pending',
+  decidedByUserId: null,
+  decidedAt: null,
+  decisionNote: null,
+  cancelledByUserId: null,
+  cancelledAt: null,
+  createdAt: '2026-05-08T00:00:00.000Z',
+  updatedAt: '2026-05-08T00:00:00.000Z',
+};
+
+export const sampleBalances: BalanceDTO[] = [
+  { leaveType: 'vacation', quota: '20.00', used: '3.00', pending: '5.00', available: '12.00' },
+  { leaveType: 'sick', quota: '10.00', used: '0.00', pending: '0.00', available: '10.00' },
+  { leaveType: 'personal', quota: '5.00', used: '0.00', pending: '0.00', available: '5.00' },
+  { leaveType: 'bereavement', quota: '3.00', used: '0.00', pending: '0.00', available: '3.00' },
+  { leaveType: 'parental', quota: '90.00', used: '0.00', pending: '0.00', available: '90.00' },
+  { leaveType: 'unpaid', quota: '0.00', used: '0.00', pending: '0.00', available: '0.00' },
+];
+
+export const sampleHoliday: HolidayDTO = {
+  id: 1,
+  date: '2026-05-01',
+  label: 'Labor Day',
+  recurringAnnually: true,
+  createdAt: '2026-04-01T00:00:00.000Z',
+  updatedAt: '2026-04-01T00:00:00.000Z',
+};
+
+export const samplePolicies: LeavePolicyDTO[] = [
+  { id: 1, leaveType: 'vacation', defaultDaysPerYear: '20.00', isPaid: true, affectsBalance: true },
+  { id: 2, leaveType: 'sick', defaultDaysPerYear: '10.00', isPaid: true, affectsBalance: true },
+  { id: 3, leaveType: 'personal', defaultDaysPerYear: '5.00', isPaid: true, affectsBalance: true },
+  { id: 4, leaveType: 'bereavement', defaultDaysPerYear: '3.00', isPaid: true, affectsBalance: true },
+  { id: 5, leaveType: 'parental', defaultDaysPerYear: '90.00', isPaid: true, affectsBalance: true },
+  { id: 6, leaveType: 'unpaid', defaultDaysPerYear: '0.00', isPaid: false, affectsBalance: false },
+];

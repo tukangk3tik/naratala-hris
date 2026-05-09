@@ -12,7 +12,15 @@ export type Permission =
   | 'users:write'
   | 'invites:manage'
   | 'departments:manage'
-  | 'audit:read';
+  | 'audit:read'
+  | 'absence:read:self'
+  | 'absence:read:reports'
+  | 'absence:read:any'
+  | 'absence:write:self'
+  | 'absence:write:any'
+  | 'absence:approve:reports'
+  | 'absence:approve:any'
+  | 'absence:configure';
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   admin: [
@@ -27,6 +35,14 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'invites:manage',
     'departments:manage',
     'audit:read',
+    'absence:read:self',
+    'absence:read:reports',
+    'absence:read:any',
+    'absence:write:self',
+    'absence:write:any',
+    'absence:approve:reports',
+    'absence:approve:any',
+    'absence:configure',
   ],
   hr: [
     'employees:read:any',
@@ -36,13 +52,30 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'employees:write:salary',
     'invites:manage',
     'departments:manage',
+    'absence:read:self',
+    'absence:read:reports',
+    'absence:read:any',
+    'absence:write:self',
+    'absence:write:any',
+    'absence:approve:any',
+    'absence:configure',
   ],
   manager: [
     'employees:read:any',
     'employees:read:salary:reports',
     'employees:read:self',
+    'absence:read:self',
+    'absence:read:reports',
+    'absence:write:self',
+    'absence:write:any',
+    'absence:approve:reports',
   ],
-  employee: ['employees:read:any', 'employees:read:self'],
+  employee: [
+    'employees:read:any',
+    'employees:read:self',
+    'absence:read:self',
+    'absence:write:self',
+  ],
 };
 
 export function hasPermission(role: Role, perm: Permission): boolean {

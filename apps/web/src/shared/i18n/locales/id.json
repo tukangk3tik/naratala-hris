@@ -20,6 +20,18 @@
     "linkExpired": "Tautan ini sudah kedaluwarsa.",
     "tryAgain": "Minta yang baru"
   },
+  "absence": {
+    "queue": "Antrian cuti",
+    "myTimeOff": "Cuti saya",
+    "calendar": "Kalender",
+    "leavePolicies": "Kebijakan cuti",
+    "holidays": "Hari libur",
+    "workingSchedule": "Jadwal kerja",
+    "request": "Ajukan cuti",
+    "approve": "Setujui",
+    "decline": "Tolak",
+    "cancel": "Batalkan"
+  },
   "common": {
     "save": "Simpan",
     "cancel": "Batal",

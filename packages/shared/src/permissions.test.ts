@@ -41,4 +41,14 @@ describe('permissions', () => {
   it('ROLE_PERMISSIONS has an entry for every role', () => {
     for (const r of ROLES) expect(ROLE_PERMISSIONS[r]).toBeDefined();
   });
+
+  it('grants absence permissions per role spec', () => {
+    expect(hasPermission('admin', 'absence:configure')).toBe(true);
+    expect(hasPermission('hr', 'absence:configure')).toBe(true);
+    expect(hasPermission('hr', 'absence:approve:any')).toBe(true);
+    expect(hasPermission('manager', 'absence:approve:reports')).toBe(true);
+    expect(hasPermission('manager', 'absence:approve:any')).toBe(false);
+    expect(hasPermission('employee', 'absence:write:self')).toBe(true);
+    expect(hasPermission('employee', 'absence:read:any')).toBe(false);
+  });
 });

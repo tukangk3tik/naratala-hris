@@ -166,6 +166,44 @@ describe('permission matrix', () => {
         expect: 'allow',
         body: { employeeId: -1, role: 'manager' },
       },
+      { method: 'GET', path: '/api/absence/requests', role: 'employee', expect: 'allow' },
+      { method: 'GET', path: '/api/absence/requests/balances', role: 'employee', expect: 'allow' },
+      { method: 'GET', path: '/api/holidays', role: 'employee', expect: 'allow' },
+      {
+        method: 'POST',
+        path: '/api/holidays',
+        role: 'employee',
+        expect: 'forbid',
+        body: { date: '2026-12-25', label: 'X', recurringAnnually: false },
+      },
+      {
+        method: 'POST',
+        path: '/api/holidays',
+        role: 'manager',
+        expect: 'forbid',
+        body: { date: '2026-12-25', label: 'X', recurringAnnually: false },
+      },
+      {
+        method: 'POST',
+        path: '/api/holidays',
+        role: 'hr',
+        expect: 'allow',
+        body: { date: '2026-12-25', label: 'X', recurringAnnually: false },
+      },
+      {
+        method: 'PATCH',
+        path: '/api/working-schedule/default',
+        role: 'manager',
+        expect: 'forbid',
+        body: { workingDays: 62 },
+      },
+      {
+        method: 'PATCH',
+        path: '/api/working-schedule/default',
+        role: 'admin',
+        expect: 'allow',
+        body: { workingDays: 62 },
+      },
     ];
   }
 
