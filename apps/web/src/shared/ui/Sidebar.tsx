@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   ScrollText,
   UserCircle,
+  Banknote,
+  Receipt,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth.js';
@@ -32,6 +34,8 @@ const ITEMS: Item[] = [
   { to: '/absence/settings/policies', label: 'Leave policies', icon: FileText, perm: 'absence:configure' },
   { to: '/absence/settings/holidays', label: 'Holidays', icon: Sun, perm: 'absence:configure' },
   { to: '/absence/settings/schedule', label: 'Working schedule', icon: Clock, perm: 'absence:configure' },
+  { to: '/payroll', label: 'Payroll', icon: Banknote, perm: 'payroll:read:any' },
+  { to: '/payroll/me', label: 'My payslips', icon: Receipt, perm: 'payroll:read:self' },
   { to: '/users', label: 'Users', icon: ShieldCheck, perm: 'users:read' },
   { to: '/audit', label: 'Audit', icon: ScrollText, perm: 'audit:read' },
   { to: '/settings/profile', label: 'Profile', icon: UserCircle },

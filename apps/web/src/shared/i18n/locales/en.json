@@ -42,5 +42,24 @@
     "search": "Search",
     "yes": "Yes",
     "no": "No"
+  },
+  "payroll": {
+    "dashboard": "Payroll Dashboard",
+    "payroll": "Payroll",
+    "myPayslips": "My payslips",
+    "createRun": "Create pay run",
+    "finalize": "Finalize run",
+    "cancel": "Cancel run",
+    "draft": "Draft",
+    "finalized": "Finalized",
+    "cancelled": "Cancelled",
+    "gross": "Gross",
+    "deduction": "Deduction",
+    "net": "Net",
+    "headcount": "Headcount",
+    "period": "Period",
+    "exportCsv": "Export CSV",
+    "reviewRun": "Review run",
+    "noRuns": "No pay runs yet"
   }
 }

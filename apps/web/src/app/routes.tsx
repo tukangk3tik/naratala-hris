@@ -19,6 +19,9 @@ import { CalendarPage } from '../features/absence/CalendarPage.js';
 import { LeavePolicyPage } from '../features/absence/LeavePolicyPage.js';
 import { HolidayPage } from '../features/absence/HolidayPage.js';
 import { WorkingScheduleSettings } from '../features/absence/WorkingScheduleSettings.js';
+import { PayrollDashboardPage } from '../features/payroll/PayrollDashboardPage.js';
+import { PayRunDetailPage } from '../features/payroll/PayRunDetailPage.js';
+import { MyPayslipsPage } from '../features/payroll/MyPayslipsPage.js';
 
 export function AppRoutes(): JSX.Element {
   return (
@@ -57,6 +60,23 @@ export function AppRoutes(): JSX.Element {
           <Route path="/absence/settings/policies" element={<RequirePermission perm="absence:configure"><LeavePolicyPage /></RequirePermission>} />
           <Route path="/absence/settings/holidays" element={<RequirePermission perm="absence:configure"><HolidayPage /></RequirePermission>} />
           <Route path="/absence/settings/schedule" element={<RequirePermission perm="absence:configure"><WorkingScheduleSettings /></RequirePermission>} />
+          <Route
+            path="/payroll"
+            element={
+              <RequirePermission perm="payroll:read:any">
+                <PayrollDashboardPage />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/payroll/runs/:id"
+            element={
+              <RequirePermission perm="payroll:read:any">
+                <PayRunDetailPage />
+              </RequirePermission>
+            }
+          />
+          <Route path="/payroll/me" element={<MyPayslipsPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>

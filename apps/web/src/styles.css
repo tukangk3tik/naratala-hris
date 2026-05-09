@@ -1534,3 +1534,54 @@ input, select, textarea { font-family: inherit; }
   font-size: 24px;
   color: var(--muted);
 }
+
+/* ============ PAYROLL ============ */
+.nt-payroll-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 24px;
+  align-items: start;
+}
+.nt-payroll-hero {
+  grid-column: 1 / -1;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+}
+.nt-hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.nt-hero-actions { display: flex; gap: 8px; align-items: center; }
+.nt-hero-sub { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.nt-hero-chart { margin-top: 8px; }
+.nt-chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.nt-chart-title { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.nt-chart-legend { display: flex; gap: 12px; font-size: 12px; color: var(--ink-soft); }
+.nt-chart-legend span { display: flex; align-items: center; gap: 4px; }
+.nt-combo-chart { position: relative; }
+.nt-chart-svg { width: 100%; height: 160px; display: block; }
+.nt-chart-x { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; color: var(--muted); }
+.nt-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+.nt-huge-num { font-size: 32px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.nt-dept-spend { display: flex; gap: 16px; align-items: center; padding: 8px 16px 16px; }
+.nt-donut svg { width: 80px; height: 80px; }
+.nt-dept-list { list-style: none; padding: 0; margin: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.nt-dept-list li { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.nt-dept-name { flex: 1; }
+.nt-dept-amount { font-weight: 600; font-size: 12px; color: var(--ink-soft); }
+.nt-runs { list-style: none; padding: 0; margin: 0; }
+.nt-runs li { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.nt-runs li:last-child { border-bottom: none; }
+.nt-run-main { flex: 1; }
+.nt-run-title { font-weight: 500; font-size: 13px; }
+.nt-table { border-collapse: collapse; }
+.nt-table th, .nt-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13px; }
+.nt-table th { font-weight: 600; font-size: 12px; color: var(--ink-soft); }
+@media (max-width: 720px) {
+  .nt-payroll-grid { grid-template-columns: 1fr; }
+}

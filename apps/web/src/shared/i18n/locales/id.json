@@ -42,5 +42,24 @@
     "search": "Cari",
     "yes": "Ya",
     "no": "Tidak"
+  },
+  "payroll": {
+    "dashboard": "Dasbor Penggajian",
+    "payroll": "Penggajian",
+    "myPayslips": "Slip gaji saya",
+    "createRun": "Buat run penggajian",
+    "finalize": "Finalisasi run",
+    "cancel": "Batalkan run",
+    "draft": "Draf",
+    "finalized": "Selesai",
+    "cancelled": "Dibatalkan",
+    "gross": "Kotor",
+    "deduction": "Potongan",
+    "net": "Bersih",
+    "headcount": "Jumlah karyawan",
+    "period": "Periode",
+    "exportCsv": "Ekspor CSV",
+    "reviewRun": "Tinjau run",
+    "noRuns": "Belum ada run penggajian"
   }
 }
