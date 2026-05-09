@@ -10,6 +10,15 @@ export const qk = {
   departments: { all: () => ['departments', 'all'] as const },
   users: { list: (filters: Record<string, unknown>) => ['users', 'list', filters] as const },
   audit: { list: (filters: Record<string, unknown>) => ['audit', 'list', filters] as const },
+  absence: {
+    list: (filters: Record<string, unknown>) => ['absence', 'list', filters] as const,
+    detail: (id: number) => ['absence', 'detail', id] as const,
+    balances: (employeeId: number | 'self', year: number) =>
+      ['absence', 'balances', employeeId, year] as const,
+    holidays: (year: number) => ['absence', 'holidays', year] as const,
+    policies: () => ['absence', 'policies'] as const,
+    schedule: () => ['absence', 'schedule'] as const,
+  },
 };
 
 export function makeQueryClient(): QueryClient {
