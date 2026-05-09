@@ -1,0 +1,30 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: naratala-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: naratala
+      MYSQL_USER: naratala
+      MYSQL_PASSWORD: dev
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: naratala-mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025'  # SMTP
+      - '8025:8025'  # Web UI
+
+volumes:
+  mysql_data:
