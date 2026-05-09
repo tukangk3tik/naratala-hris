@@ -8,6 +8,12 @@ const TITLES: Record<string, string> = {
   '/users': 'Users',
   '/audit': 'Audit',
   '/settings/profile': 'Profile',
+  '/absence/me': 'My time off',
+  '/absence/calendar': 'Calendar',
+  '/absence/settings/policies': 'Leave policies',
+  '/absence/settings/holidays': 'Holidays',
+  '/absence/settings/schedule': 'Working schedule',
+  '/absence': 'Absence queue',
 };
 
 export function Shell(): JSX.Element {
