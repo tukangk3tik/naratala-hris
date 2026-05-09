@@ -204,6 +204,25 @@ describe('permission matrix', () => {
         expect: 'allow',
         body: { workingDays: 62 },
       },
+      // Payroll
+      { method: 'GET', path: '/api/payroll/runs', role: 'employee', expect: 'forbid' },
+      { method: 'GET', path: '/api/payroll/runs', role: 'manager', expect: 'forbid' },
+      { method: 'GET', path: '/api/payroll/runs', role: 'hr', expect: 'allow' },
+      {
+        method: 'POST',
+        path: '/api/payroll/runs',
+        role: 'employee',
+        expect: 'forbid',
+        body: { name: 'Test', periodStart: '2026-05-01', periodEnd: '2026-05-31' },
+      },
+      {
+        method: 'POST',
+        path: '/api/payroll/runs',
+        role: 'hr',
+        expect: 'allow',
+        body: { name: 'Test HR Run', periodStart: '2026-05-01', periodEnd: '2026-05-31' },
+      },
+      { method: 'GET', path: '/api/payroll/me', role: 'employee', expect: 'allow' },
     ];
   }
 

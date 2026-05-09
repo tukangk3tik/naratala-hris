@@ -40,6 +40,10 @@ import { createLeaveRequestRouter } from '../modules/absence/leaveRequestRoutes.
 import { createHolidayRouter } from '../modules/absence/holidayRoutes.js';
 import { createLeavePolicyRouter } from '../modules/absence/leavePolicyRoutes.js';
 import { createWorkingScheduleRouter } from '../modules/absence/workingScheduleRoutes.js';
+import { createPayRunRepo } from '../modules/payroll/payRunRepo.js';
+import { createPayslipRepo } from '../modules/payroll/payslipRepo.js';
+import { createPayrollRunService } from '../modules/payroll/payrollRunService.js';
+import { createPayrollRouter } from '../modules/payroll/payrollRoutes.js';
 
 function ttlToMs(value: string): number {
   const m = /^(\d+)([smhd])$/.exec(value);
@@ -130,4 +134,13 @@ export function wireRoutes(app: Express, deps: { db: DB; env: Env }): void {
   app.use('/api/holidays', createHolidayRouter({ service: holidaySvc, jwt }));
   app.use('/api/leave-policies', createLeavePolicyRouter({ service: policySvc, jwt }));
   app.use('/api/working-schedule', createWorkingScheduleRouter({ schedule: scheduleSvc, quotas: quotaSvc, jwt }));
+
+  const payrollSvc = createPayrollRunService({
+    db,
+    payRuns: createPayRunRepo(db),
+    payslips: createPayslipRepo(db),
+    employees: empRepo,
+    audit: auditRepo,
+  });
+  app.use('/api/payroll', createPayrollRouter({ service: payrollSvc, employees: empRepo, jwt }));
 }
